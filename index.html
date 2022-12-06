@@ -1,0 +1,407 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="utf-8">
+
+ <link href="http://www.niser.ac.in/~smishra/css/smlab.css"
+       rel="stylesheet" 
+       type="text/css" />
+ <meta name="viewport" content="width=device-width, initialscale=1">
+<body>
+<div class="container">
+ <h1> Linear regression with multiple features</h1>
+
+<p><h2>
+                        Introduction
+                    </h2></p>
+
+
+<head> <script type="text/javascript"
+     src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script>
+</head>
+
+<p>In simple linear regression, we have only one \(x\) (input feature) and one \(y\) (target variable). When we fit our data we'll get a line with the least sum of squared residuals. In linear regression with multiple variables, instead of a single input feature, we use multiple input features (assuming that it would help to make the prediction better). Here, when we fit our data, we would get a plane or a higher dimensional object(hyper-plane), depending on the number of input features we use.  </p>
+
+
+<p><h2>
+                        Model
+                    </h2></p>
+<p> We assume \(y\) (target variable) as a linear function of \(x\) (input features)
+ $${{f(x)=\sum_{i=0}^{n} w_{i} x_{i}}}$$
+<p> where n is the number of input features. f(x) depends on both, the parameters(w) and features(x) .</p>
+
+<p>We fix \(x_{0}=1\), so that \(w_{0}\) is the intercept term. If we have 'n' input features, then \(W\) and \(X\) are (n+1) dimensional vectors, beacause we add an extra \(x_{0}\) and \(w_{0}\). Now for training data set, we need to pick the parameters. We will define a function, that measures, for each values of \(w\), how close the \(f_{w}\left(x^{(\imath)}\right)\) are to the corresponding \(y^{(i)}\). We define the cost function: $${{J(w)=\frac{1}{2} \sum_{i=1}^{m}\left(f_{w}\left(x^{(i)}\right)-y^{(i)}\right)^{2}}}$$</p>
+
+<p>It is the least-square cost function that gives rise to the ordinary least squares regression model.</p>
+
+<p> Our aim is to find value of w which reduces \(J(w)\) or the cost function. </p>
+
+<h2>Gradient Descent</h2>
+<p> We will optimize our cost function using Gradient Descent Algorithm.Here we find the value of \(w\) which reduces the cost fucntion.  We will start  with some \(W\) (which is an n+1 dimensional vector) and repeatedly changing \(W\) to reduce \(J(w)\), and in each iteration we update \(W\).</p>
+<br>
+<figure>
+                            <img src="https://cdn-images-1.medium.com/max/600/1*iNPHcCxIvcm7RwkRaMTx1g.jpeg" alt="Threshold" style="width:500px;"> 
+                            <figcaption>
+                                Fig.1 - Gradient descent (Source: <a href="https://cdn-images-1.medium.com/max/600/1*iNPHcCxIvcm7RwkRaMTx1g.jpeg" target="blank">MC.AI</a>)
+                            </figcaption>
+                        </figure>
+
+<br>
+<p>One step of gradient descent can be implemented as $${{w_{j}=w_{j}-\alpha \frac{\partial}{\partial w_{j}} J(w)}}$$ (= denotes the assignment of new value to \(w_{j}\)). This update is simultaneously performed for all values of j = 0, . . . , n, that is for all input features. Here \(\alpha\) is called the learning rate. The learning rate is a hyperparameter, which is the size of the each learning step.</p>
+
+<p> Considering one training example: (x, y) $${{\begin{aligned}
+\frac{\partial}{\partial w_{j}} J(w) &=\frac{\partial}{\partial w_{j}} \frac{1}{2}\left(f_{w}(x)-y\right)^{2} \\
+&=2 \cdot \frac{1}{2}\left(f_{w}(x)-y\right) \cdot \frac{\partial}{\partial w_{j}}\left(f_{w}(x)-y\right) \\
+&=\left(f_{w}(x)-y\right) \cdot \frac{\partial}{\partial w_{j}}\left(\sum_{i=0}^{n} w_{i} x_{i}-y\right) \\
+&=\left(f_{w}(x)-y\right) x_{j}
+\end{aligned}}}$$</p>
+
+<p> So the new updated \(w_{j}\) for one training example is : $${{w_{j}:=w_{j}-\alpha\left(f_{w}\left(x^{(i)}\right)-y^{(i)}\right) x_{j}^{(i)}}}$$ </p>
+
+<p>for all the training example : $${{w_{j}:=w_{j}-\alpha\sum_{i=1}^{m}\left(f_{w}\left(x^{(i)}\right)-y^{(i)}\right) x_{j}^{(i)}}}$$ where \(x^{(i)}\) is the input feature of i th training example and \(y^{(i)}\) is the target label of i th training example. So in each iteration of gradient descent, the \(w_{(j)}\) is updated for j = 0,1,....,n, which are the number of input features. </p>
+
+<p>Here we can see that, the magnitude of the update is proportional to the error term \(\left(f_{w}\left(x^{(i)}\right)-y^{(i)}\right)\); which means if the difference between predicted y and actual y is less, then the parameters have to changed in lesser extend only, but if the diference between predicted y and actual y is huge, that is, a large error, then there is need for lager change in paramteres.</p>
+
+<p> Generally gradient decent is susceptible to local minima, however, here the cost function, J is a convex quadratic function, so, there is only one global, and no other local, optima; thus gradient descent always converges (assuming the learning rate \(\alpha\) is not too large).</p>
+
+
+
+
+<br>
+<figure>
+                            <img src="https://i.imgur.com/xnPvEok.gif" alt="Gradient Descent" class="center"> 
+                            <figcaption>
+                                Fig.2 - Gradient descent converging to the global minima.
+                            </figcaption>
+                        </figure>
+
+<br>
+
+
+
+<p><h2>Implementation</h2></p>
+<p> Let's first implement in python from scratch, which will help understand the theory a bit clearer. And after that we can use scikit-learn approach.</p>
+<p><a href="https://people.sc.fsu.edu/~jburkardt/datasets/regression/x12.txt" target = "blank">Find the dataset here</a></p>
+
+
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%"><span style="color: #008800; font-weight: bold">import</span> <span style="color: #0e84b5; font-weight: bold">seaborn</span> <span style="color: #008800; font-weight: bold">as</span> <span style="color: #0e84b5; font-weight: bold">sns</span>
+<span style="color: #008800; font-weight: bold">import</span> <span style="color: #0e84b5; font-weight: bold">numpy</span> <span style="color: #008800; font-weight: bold">as</span> <span style="color: #0e84b5; font-weight: bold">np</span>
+<span style="color: #008800; font-weight: bold">import</span> <span style="color: #0e84b5; font-weight: bold">pandas</span> <span style="color: #008800; font-weight: bold">as</span> <span style="color: #0e84b5; font-weight: bold">pd</span>
+<span style="color: #008800; font-weight: bold">import</span> <span style="color: #0e84b5; font-weight: bold">matplotlib.pyplot</span> <span style="color: #008800; font-weight: bold">as</span> <span style="color: #0e84b5; font-weight: bold">plt</span>
+plt<span style="color: #333333">.</span>rcParams[<span style="background-color: #fff0f0">&#39;figure.figsize&#39;</span>] <span style="color: #333333">=</span>(<span style="color: #6600EE; font-weight: bold">11.7</span>,<span style="color: #6600EE; font-weight: bold">8.27</span>)
+<span style="color: #888888"># Reading Data</span>
+data <span style="color: #333333">=</span> pd<span style="color: #333333">.</span>read_csv(<span style="background-color: #fff0f0">&#39;electrical.csv&#39;</span>)
+<span style="color: #008800; font-weight: bold">print</span>(data<span style="color: #333333">.</span>shape)
+data<span style="color: #333333">.</span>head() 
+</pre></div>
+<br>
+
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%">       Capital 	Labour 	Energy 	Electrical
+<span style="color: #0000DD; font-weight: bold">0</span> 	<span style="color: #6600EE; font-weight: bold">98.288</span> 	<span style="color: #6600EE; font-weight: bold">0.386</span> 	<span style="color: #6600EE; font-weight: bold">13.219</span> 	<span style="color: #6600EE; font-weight: bold">1.270</span>
+<span style="color: #0000DD; font-weight: bold">1</span> 	<span style="color: #6600EE; font-weight: bold">255.068</span> <span style="color: #6600EE; font-weight: bold">1.179</span> 	<span style="color: #6600EE; font-weight: bold">49.145</span> 	<span style="color: #6600EE; font-weight: bold">4.597</span>
+<span style="color: #0000DD; font-weight: bold">2</span> 	<span style="color: #6600EE; font-weight: bold">208.904</span> <span style="color: #6600EE; font-weight: bold">0.532</span> 	<span style="color: #6600EE; font-weight: bold">18.005</span> 	<span style="color: #6600EE; font-weight: bold">1.985</span>
+<span style="color: #0000DD; font-weight: bold">3</span> 	<span style="color: #6600EE; font-weight: bold">528.864</span> <span style="color: #6600EE; font-weight: bold">1.836</span> 	<span style="color: #6600EE; font-weight: bold">75.639</span> 	<span style="color: #6600EE; font-weight: bold">9.897</span>
+<span style="color: #0000DD; font-weight: bold">4</span> 	<span style="color: #6600EE; font-weight: bold">307.419</span> <span style="color: #6600EE; font-weight: bold">1.136</span> 	<span style="color: #6600EE; font-weight: bold">52.234</span> 	<span style="color: #6600EE; font-weight: bold">5.907</span>
+</pre></div>
+<br> 
+
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%">capital <span style="color: #333333">=</span> data[<span style="background-color: #fff0f0">&#39;Capital&#39;</span>]<span style="color: #333333">.</span>values
+labour<span style="color: #333333">=</span> data[<span style="background-color: #fff0f0">&#39;Labour&#39;</span>]<span style="color: #333333">.</span>values
+energy <span style="color: #333333">=</span> data[<span style="background-color: #fff0f0">&#39;Energy&#39;</span>]<span style="color: #333333">.</span>values
+electrical <span style="color: #333333">=</span> data[<span style="background-color: #fff0f0">&#39;Electrical&#39;</span>]<span style="color: #333333">.</span>values
+<span style="color: #888888">#X matrix</span>
+m <span style="color: #333333">=</span> <span style="color: #007020">len</span>(capital)
+x0 <span style="color: #333333">=</span> np<span style="color: #333333">.</span>ones(m)
+X <span style="color: #333333">=</span> np<span style="color: #333333">.</span>array([x0, capital, labour, energy])<span style="color: #333333">.</span>T 
+X<span style="color: #333333">.</span>shape
+<span style="color: #888888">#setting initial parameters as zeroes</span>
+W <span style="color: #333333">=</span> np<span style="color: #333333">.</span>array([<span style="color: #0000DD; font-weight: bold">0</span>,<span style="color: #0000DD; font-weight: bold">0</span>,<span style="color: #0000DD; font-weight: bold">0</span>,<span style="color: #0000DD; font-weight: bold">0</span>])
+Y <span style="color: #333333">=</span> np<span style="color: #333333">.</span>array(electrical)
+</pre></div>
+<br>
+
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%"><span style="color: #888888">#f = np.dot(X,W)</span>
+<span style="color: #888888">#err = f-Y,error</span>
+<span style="color: #888888">#err_sq = (f-Y)**2, squared error</span>
+<span style="color: #888888">#init_error = np.sum(err_sq)/2</span>
+<span style="color: #888888">#X-dim-(1000,3),W-dim-(1,3), Y-dim-(1000,1)</span>
+<span style="color: #888888">#defining cost function</span>
+
+<span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">cost_fn</span>(X,W,Y):
+    m <span style="color: #333333">=</span> <span style="color: #007020">len</span>(Y)
+    J <span style="color: #333333">=</span> np<span style="color: #333333">.</span>sum((X<span style="color: #333333">.</span>dot(W)<span style="color: #333333">-</span>Y)<span style="color: #333333">**</span><span style="color: #0000DD; font-weight: bold">2</span>)<span style="color: #333333">/</span>(<span style="color: #0000DD; font-weight: bold">2</span><span style="color: #333333">*</span>m)
+    <span style="color: #008800; font-weight: bold">return</span> J  
+inital_cost <span style="color: #333333">=</span> cost_fn(X, W, Y)
+<span style="color: #008800; font-weight: bold">print</span>(inital_cost)
+</pre></div>
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%"><span style="color: #6600EE; font-weight: bold">17.26223753125</span>
+</pre></div>
+
+<br>
+
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%"><span style="color: #888888">#defining gradient decent algorithm to minimize the cost</span>
+<span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">gradient_descent</span>(X, Y, W, alpha, iterations):
+    <span style="color: #888888">#cost_history appends the cost to itself after every iteration</span>
+    <span style="color: #888888">#updated_W appends the theta to itself after every iteration</span>
+    
+    cost_history <span style="color: #333333">=</span> <span style="color: #007020">list</span>()
+    updated_W <span style="color: #333333">=</span> <span style="color: #007020">list</span>()
+   
+    
+    m <span style="color: #333333">=</span> <span style="color: #007020">len</span>(Y)
+    
+    <span style="color: #008800; font-weight: bold">for</span> iteration <span style="color: #000000; font-weight: bold">in</span> <span style="color: #007020">range</span>(iterations):
+        <span style="color: #888888"># predicted y values.</span>
+        f <span style="color: #333333">=</span> X<span style="color: #333333">.</span>dot(W)
+        
+        <span style="color: #888888"># Difference b/w predicted y values and actual Y</span>
+        loss <span style="color: #333333">=</span> f <span style="color: #333333">-</span> Y
+        
+        <span style="color: #888888"># Calculating the gradient</span>
+        gradient <span style="color: #333333">=</span> X<span style="color: #333333">.</span>T<span style="color: #333333">.</span>dot(loss) <span style="color: #333333">/</span> m
+        
+        <span style="color: #888888"># updating W using Gradient</span>
+        W <span style="color: #333333">=</span> W <span style="color: #333333">-</span> alpha <span style="color: #333333">*</span> gradient
+        updated_W<span style="color: #333333">.</span>append(W)  
+        
+        <span style="color: #888888"># New Cost </span>
+        cost <span style="color: #333333">=</span> cost_fn(X, W, Y)
+        cost_history<span style="color: #333333">.</span>append(cost)
+        
+        
+    <span style="color: #008800; font-weight: bold">return</span> updated_W, cost_history
+</pre></div>
+<br>
+
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%">alpha <span style="color: #333333">=</span> <span style="color: #6600EE; font-weight: bold">0.00001</span> <span style="color: #888888">#learning rate</span>
+updated_W, cost_history <span style="color: #333333">=</span> gradient_descent(X, Y, W, alpha, <span style="color: #0000DD; font-weight: bold">120</span>)
+
+<span style="color: #888888"># New Values of theta, shows the latest value appended to the list</span>
+<span style="color: #008800; font-weight: bold">print</span>(<span style="background-color: #fff0f0">&#39;new_W:&#39;</span>, updated_W[<span style="color: #333333">-</span><span style="color: #0000DD; font-weight: bold">1</span>])
+
+<span style="color: #888888"># Final Cost of new B, shows the latest value appended to the list</span>
+<span style="color: #008800; font-weight: bold">print</span>(<span style="background-color: #fff0f0">&#39;reduced_cost:&#39;</span>,cost_history[<span style="color: #333333">-</span><span style="color: #0000DD; font-weight: bold">1</span>])
+</pre></div>
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%">new_W: [<span style="color: #6600EE; font-weight: bold">2.10368864e-04</span> <span style="color: #6600EE; font-weight: bold">1.15020092e-02</span> <span style="color: #6600EE; font-weight: bold">2.20620879e-05</span> <span style="color: #6600EE; font-weight: bold">1.36041074e-02</span>]
+reduced_cost: <span style="color: #6600EE; font-weight: bold">0.8128226254518108</span>
+</pre></div>
+<br>
+
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%"><span style="color: #888888"># Model Evaluation - RMSE</span>
+<span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">rmse</span>(Y, Y_pred):
+    rmse <span style="color: #333333">=</span> np<span style="color: #333333">.</span>sqrt(<span style="color: #007020">sum</span>((Y <span style="color: #333333">-</span> Y_pred) <span style="color: #333333">**</span> <span style="color: #0000DD; font-weight: bold">2</span>) <span style="color: #333333">/</span> <span style="color: #007020">len</span>(Y))
+    <span style="color: #008800; font-weight: bold">return</span> rmse
+
+<span style="color: #888888"># Model Evaluation - R2 Score</span>
+<span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">r2_score</span>(Y, Y_pred):
+    mean_y <span style="color: #333333">=</span> np<span style="color: #333333">.</span>mean(Y)
+    ss_tot <span style="color: #333333">=</span> <span style="color: #007020">sum</span>((Y <span style="color: #333333">-</span> mean_y) <span style="color: #333333">**</span> <span style="color: #0000DD; font-weight: bold">2</span>) 
+    ss_res <span style="color: #333333">=</span> <span style="color: #007020">sum</span>((Y <span style="color: #333333">-</span> Y_pred) <span style="color: #333333">**</span> <span style="color: #0000DD; font-weight: bold">2</span>) <span style="color: #888888">#sum of squared residuals</span>
+    r2 <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">1</span> <span style="color: #333333">-</span> (ss_res <span style="color: #333333">/</span> ss_tot)
+    <span style="color: #008800; font-weight: bold">return</span> r2
+
+
+Y_pred <span style="color: #333333">=</span> X<span style="color: #333333">.</span>dot(updated_W[<span style="color: #333333">-</span><span style="color: #0000DD; font-weight: bold">1</span>])
+
+<span style="color: #008800; font-weight: bold">print</span>(<span style="background-color: #fff0f0">&#39;rmse:&#39;</span>, rmse(Y, Y_pred))
+<span style="color: #008800; font-weight: bold">print</span>(<span style="background-color: #fff0f0">&#39;r2_score:&#39;</span>, r2_score(Y, Y_pred))
+</pre></div>
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%">rmse: <span style="color: #6600EE; font-weight: bold">1.2750079415060995</span>
+r2_score: <span style="color: #6600EE; font-weight: bold">0.8402052663759609</span>
+</pre></div>
+<br>
+
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%">x <span style="color: #333333">=</span> np<span style="color: #333333">.</span>arange(<span style="color: #0000DD; font-weight: bold">1</span>,<span style="color: #007020">len</span>(cost_history)<span style="color: #333333">+</span><span style="color: #0000DD; font-weight: bold">1</span>) <span style="color: #888888">#iterations</span>
+plt<span style="color: #333333">.</span>plot(x,cost_history, linestyle<span style="color: #333333">=</span><span style="background-color: #fff0f0">&#39;-&#39;</span>, marker<span style="color: #333333">=</span><span style="background-color: #fff0f0">&#39;o&#39;</span>)
+plt<span style="color: #333333">.</span>xlabel(<span style="background-color: #fff0f0">&quot;ITERATIONS&quot;</span>)
+plt<span style="color: #333333">.</span>ylabel(<span style="background-color: #fff0f0">&quot;COST J&quot;</span>)
+plt<span style="color: #333333">.</span>show()
+</pre></div>
+
+<br>
+
+<figure>
+                        <img src="note_1.png" alt="Input" style="width: 700px;">
+                        <figcaption> Fig 3 - Cost J decreases with iteration.
+                               
+                        </figcaption>
+                    </figure>
+
+<br>
+
+
+
+
+
+
+
+
+<p><h2>Implementation using scikit-learn</h2>
+
+</p>
+
+
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%"><span style="color: #008800; font-weight: bold">import</span> <span style="color: #0e84b5; font-weight: bold">seaborn</span> <span style="color: #008800; font-weight: bold">as</span> <span style="color: #0e84b5; font-weight: bold">sns</span>
+<span style="color: #008800; font-weight: bold">import</span> <span style="color: #0e84b5; font-weight: bold">numpy</span> <span style="color: #008800; font-weight: bold">as</span> <span style="color: #0e84b5; font-weight: bold">np</span>
+<span style="color: #008800; font-weight: bold">import</span> <span style="color: #0e84b5; font-weight: bold">pandas</span> <span style="color: #008800; font-weight: bold">as</span> <span style="color: #0e84b5; font-weight: bold">pd</span>
+<span style="color: #008800; font-weight: bold">import</span> <span style="color: #0e84b5; font-weight: bold">matplotlib.pyplot</span> <span style="color: #008800; font-weight: bold">as</span> <span style="color: #0e84b5; font-weight: bold">plt</span>
+plt<span style="color: #333333">.</span>rcParams[<span style="background-color: #fff0f0">&#39;figure.figsize&#39;</span>] <span style="color: #333333">=</span>(<span style="color: #6600EE; font-weight: bold">11.7</span>,<span style="color: #6600EE; font-weight: bold">8.27</span>)
+<span style="color: #888888"># Reading Data</span>
+data <span style="color: #333333">=</span> pd<span style="color: #333333">.</span>read_csv(<span style="background-color: #fff0f0">&#39;electrical.csv&#39;</span>)
+<span style="color: #008800; font-weight: bold">print</span>(data<span style="color: #333333">.</span>shape)
+data<span style="color: #333333">.</span>head()
+</pre></div>
+
+<br> 
+
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%">       Capital 	Labour 	Energy 	Electrical
+<span style="color: #0000DD; font-weight: bold">0</span> 	<span style="color: #6600EE; font-weight: bold">98.288</span> 	<span style="color: #6600EE; font-weight: bold">0.386</span> 	<span style="color: #6600EE; font-weight: bold">13.219</span> 	<span style="color: #6600EE; font-weight: bold">1.270</span>
+<span style="color: #0000DD; font-weight: bold">1</span> 	<span style="color: #6600EE; font-weight: bold">255.068</span> <span style="color: #6600EE; font-weight: bold">1.179</span> 	<span style="color: #6600EE; font-weight: bold">49.145</span> 	<span style="color: #6600EE; font-weight: bold">4.597</span>
+<span style="color: #0000DD; font-weight: bold">2</span> 	<span style="color: #6600EE; font-weight: bold">208.904</span> <span style="color: #6600EE; font-weight: bold">0.532</span> 	<span style="color: #6600EE; font-weight: bold">18.005</span> 	<span style="color: #6600EE; font-weight: bold">1.985</span>
+<span style="color: #0000DD; font-weight: bold">3</span> 	<span style="color: #6600EE; font-weight: bold">528.864</span> <span style="color: #6600EE; font-weight: bold">1.836</span> 	<span style="color: #6600EE; font-weight: bold">75.639</span> 	<span style="color: #6600EE; font-weight: bold">9.897</span>
+<span style="color: #0000DD; font-weight: bold">4</span> 	<span style="color: #6600EE; font-weight: bold">307.419</span> <span style="color: #6600EE; font-weight: bold">1.136</span> 	<span style="color: #6600EE; font-weight: bold">52.234</span> 	<span style="color: #6600EE; font-weight: bold">5.907</span>
+</pre></div>
+<br> 
+
+
+
+
+
+
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%">capital<span style="color: #333333">=</span> data[<span style="background-color: #fff0f0">&#39;Capital&#39;</span>]<span style="color: #333333">.</span>values
+labour<span style="color: #333333">=</span> data[<span style="background-color: #fff0f0">&#39;Labour&#39;</span>]<span style="color: #333333">.</span>values
+energy <span style="color: #333333">=</span> data[<span style="background-color: #fff0f0">&#39;Energy&#39;</span>]<span style="color: #333333">.</span>values
+electrical <span style="color: #333333">=</span> data[<span style="background-color: #fff0f0">&#39;Electrical&#39;</span>]<span style="color: #333333">.</span>values
+</pre></div>
+
+
+
+
+
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%"><span style="color: #008800; font-weight: bold">from</span> <span style="color: #0e84b5; font-weight: bold">sklearn.linear_model</span> <span style="color: #008800; font-weight: bold">import</span> LinearRegression
+<span style="color: #008800; font-weight: bold">from</span> <span style="color: #0e84b5; font-weight: bold">sklearn.metrics</span> <span style="color: #008800; font-weight: bold">import</span> mean_squared_error
+
+<span style="color: #888888"># X and Y Values</span>
+X <span style="color: #333333">=</span> np<span style="color: #333333">.</span>array([capital,labour,energy])<span style="color: #333333">.</span>T
+Y <span style="color: #333333">=</span> np<span style="color: #333333">.</span>array(electrical)
+
+<span style="color: #888888"># Model Intialization</span>
+model <span style="color: #333333">=</span> LinearRegression()
+<span style="color: #888888"># Data Fitting</span>
+model<span style="color: #333333">=</span> model<span style="color: #333333">.</span>fit(X, Y)
+<span style="color: #888888"># Y Prediction</span>
+Y_pred <span style="color: #333333">=</span> model<span style="color: #333333">.</span>predict(X)
+
+<span style="color: #888888"># Model Evaluation</span>
+rmse <span style="color: #333333">=</span> np<span style="color: #333333">.</span>sqrt(mean_squared_error(Y, Y_pred))
+r2 <span style="color: #333333">=</span> model<span style="color: #333333">.</span>score(X, Y) <span style="color: #888888">#r2 is the square of correlation coefficient</span>
+
+
+<span style="color: #008800; font-weight: bold">print</span>(<span style="background-color: #fff0f0">&#39;rmse:&#39;</span>,rmse)
+<span style="color: #008800; font-weight: bold">print</span>(<span style="background-color: #fff0f0">&#39;r2 &#39;</span>,r2)
+</pre></div>
+<br> 
+
+
+
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%"><span style="color: #008800; font-weight: bold">print</span>(<span style="background-color: #fff0f0">&#39;model coefficient: &#39;</span>, model<span style="color: #333333">.</span>coef_)
+<span style="color: #008800; font-weight: bold">print</span>(<span style="background-color: #fff0f0">&#39;model intercept: &#39;</span>, model<span style="color: #333333">.</span>intercept_)
+</pre></div>
+
+<br> 
+
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%">model coefficient:  [ <span style="color: #6600EE; font-weight: bold">0.0022478</span>  <span style="color: #333333">-</span><span style="color: #6600EE; font-weight: bold">0.59955627</span>  <span style="color: #6600EE; font-weight: bold">0.09069419</span>]
+model intercept:  <span style="color: #6600EE; font-weight: bold">0.6371381814320403</span>
+</pre></div>
+<br> 
+
+
+
+
+
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%">F <span style="color: #333333">=</span> np<span style="color: #333333">.</span>column_stack(((capital, labour, energy))) <span style="color: #888888">#making a 16x3 numpy array stacking the 3 columns</span>
+S <span style="color: #333333">=</span> np<span style="color: #333333">.</span>dot(F,model<span style="color: #333333">.</span>coef_)
+S <span style="color: #333333">=</span> S <span style="color: #333333">+</span> model<span style="color: #333333">.</span>intercept_ <span style="color: #888888">#adding the intercept value </span>
+<span style="color: #008800; font-weight: bold">print</span>(S)
+</pre></div>
+<br> 
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%">[ <span style="color: #6600EE; font-weight: bold">1.82552732</span>  <span style="color: #6600EE; font-weight: bold">4.96076807</span>  <span style="color: #6600EE; font-weight: bold">2.4206967</span>   <span style="color: #6600EE; font-weight: bold">7.585149</span>    <span style="color: #6600EE; font-weight: bold">5.38437771</span>  <span style="color: #6600EE; font-weight: bold">1.11614805</span>
+  <span style="color: #6600EE; font-weight: bold">3.92553325</span>  <span style="color: #6600EE; font-weight: bold">3.21398151</span>  <span style="color: #6600EE; font-weight: bold">0.76968898</span>  <span style="color: #6600EE; font-weight: bold">9.77712918</span>  <span style="color: #6600EE; font-weight: bold">7.78980092</span>  <span style="color: #6600EE; font-weight: bold">2.46495346</span>
+ <span style="color: #6600EE; font-weight: bold">11.73325897</span>  <span style="color: #6600EE; font-weight: bold">4.31734975</span>  <span style="color: #6600EE; font-weight: bold">7.42040215</span>  <span style="color: #6600EE; font-weight: bold">4.25023497</span>]
+</pre></div>
+<br>
+
+
+
+
+
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%">plt<span style="color: #333333">.</span>scatter(S,Y)
+plt<span style="color: #333333">.</span>plot(S,Y_pred, <span style="background-color: #fff0f0">&#39;r&#39;</span>)
+plt<span style="color: #333333">.</span>xlabel(<span style="background-color: #fff0f0">&quot;linear combination of feature vectors&quot;</span>)
+plt<span style="color: #333333">.</span>ylabel(<span style="background-color: #fff0f0">&quot;actual y&quot;</span>)
+plt<span style="color: #333333">.</span>show
+</pre></div>
+<br>
+
+<figure>
+                        <img src="note.png" alt="Input" style="width: 700px;">
+                        <figcaption>
+                        </figcaption>
+                    </figure>
+
+
+
+
+
+                     <h2>
+                        References
+                    </h2>
+                    <ol type="1">
+                        <li>
+                            CS229, Stanford University
+                        </li>
+                        <li>
+                            StatQuest with Josh Starmer <a href="https://www.youtube.com/watch?v=zITIFTsivN8" target="blank">https://www.youtube.com/watch?v=zITIFTsivN8</a>.
+                        </li>
+                        
+                        <li>
+                            Machine Learning by Tom Mitchell
+                        </li>
+                       
+                    </ol>
+                 </div><!--.wrapper div-->
+            </div><!--.content-area div-->
+        </div><!--.bg1 div-->
+        <div class="bg4">
+            <div class="details">
+                <div class="wrapper">
+
+
+     
+
+
+
+
+
+
+
+
+<h4>Lecture scribed by Ashish V
+</h4>
+
+
+
+
+
+
+
+
+
+
+<body>
+
+
+
+<html>
